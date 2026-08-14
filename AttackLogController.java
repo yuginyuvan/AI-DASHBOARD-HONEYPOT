@@ -1,42 +1,36 @@
 package com.honeypot.backend.controller;
 
 import com.honeypot.backend.model.AttackLog;
-import com.honeypot.backend.repository.AttackLogRepository;
-
+import com.honeypot.backend.service.AttackProcessingService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/api/logs")
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
 public class AttackLogController {
 
+    private final AttackProcessingService attackProcessingService;
 
-    private final AttackLogRepository repo;
-
-
-    public AttackLogController(AttackLogRepository repo){
-        this.repo = repo;
+    public AttackLogController(AttackProcessingService attackProcessingService) {
+        this.attackProcessingService = attackProcessingService;
     }
-
 
     @PostMapping
-    public AttackLog saveLog(
-            @RequestBody AttackLog log
-    ){
-
-        return repo.save(log);
-
+    public ResponseEntity<AttackLog> saveLog(@RequestBody AttackLog log) {
+        AttackLog saved = attackProcessingService.processAttack(log);
+        return ResponseEntity.ok(saved);
     }
-
 
     @GetMapping
-    public List<AttackLog> getLogs(){
-
-        return repo.findAll();
-
+    public ResponseEntity<List<AttackLog>> getLogs() {
+        return ResponseEntity.ok(attackProcessingService.getAllLogs());
     }
 
+    @GetMapping("/recent")
+    public ResponseEntity<List<AttackLog>> getRecentLogs() {
+        return ResponseEntity.ok(attackProcessingService.getRecentLogs());
+    }
 }
